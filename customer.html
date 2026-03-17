@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixNow - Dịch Vụ Khách Hàng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        fixblue: '#14387d',
+                        fixorange: '#ff8200',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #ff8200;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-800 h-screen overflow-hidden flex">
+
+    <!-- SIDEBAR (Tương tự worker.html) -->
+    <aside class="w-64 bg-white shadow-lg flex-shrink-0 hidden md:flex flex-col z-20 relative border-r">
+        <div class="h-16 flex items-center px-6 border-b">
+            <h1 class="text-3xl font-extrabold tracking-tight">
+                <span class="text-fixblue">Fix</span><span class="text-fixorange">Now</span>
+            </h1>
+            <span class="ml-2 text-[10px] font-bold uppercase bg-orange-100 text-fixorange px-2 py-1 rounded">Khách</span>
+        </div>
+
+        <div class="p-4 flex-1 overflow-y-auto">
+            <div class="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-200 mb-6">
+                <img src="https://ui-avatars.com/api/?name=Lan+Nguyen&background=ff8200&color=fff" alt="Avatar"
+                    class="w-10 h-10 rounded-full shadow-sm">
+                <div class="ml-3">
+                    <p class="text-sm font-bold text-gray-800">Chị Lan Nguyễn</p>
+                    <p class="text-xs text-orange-600 font-medium"><i class="fas fa-crown"></i> Khách hàng VIP</p>
+                </div>
+            </div>
+
+            <nav class="space-y-2">
+                <button onclick="switchTab('home')" id="nav-home"
+                    class="nav-item w-full flex items-center px-4 py-3 bg-fixblue text-white rounded-lg transition-colors font-medium">
+                    <i class="fas fa-home w-6 text-left"></i> Trang chủ
+                </button>
+                <button onclick="switchTab('ai')" id="nav-ai"
+                    class="nav-item w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium">
+                    <i class="fas fa-robot w-6 text-left text-blue-500"></i> FixNow AI
+                    <span class="ml-auto bg-fixorange text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">Mới</span>
+                </button>
+                <button onclick="switchTab('activity')" id="nav-activity"
+                    class="nav-item w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium">
+                    <i class="fas fa-clipboard-list w-6 text-left"></i> Đơn hàng
+                    <span class="ml-auto bg-blue-100 text-fixblue text-xs font-bold px-2 py-0.5 rounded-full" id="sidebar-activity-badge">1</span>
+                </button>
+                <button onclick="switchTab('wallet')" id="nav-wallet"
+                    class="nav-item w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium">
+                    <i class="fas fa-wallet w-6 text-left"></i> Ví & Ưu đãi
+                </button>
+                <button onclick="switchTab('notifications')" id="nav-notifications"
+                    class="nav-item w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium">
+                    <i class="fas fa-bell w-6 text-left"></i> Thông báo
+                    <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">3</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings"
+                    class="nav-item w-full flex items-center px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium">
+                    <i class="fas fa-user-cog w-6 text-left"></i> Tài khoản
+                </button>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t">
+            <button
+                class="w-full flex items-center px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium">
+                <i class="fas fa-sign-out-alt w-6 text-left"></i> Đăng xuất
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-100 relative">
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10 hidden md:flex">
+            <h2 id="page-title" class="text-xl font-bold text-gray-800">Trang chủ Khách hàng</h2>
+
+            <div class="flex items-center space-x-6">
+                <div class="bg-gray-100 px-4 py-2 rounded-full flex items-center border border-gray-200 w-80">
+                   <i class="fas fa-search text-gray-400 mr-2"></i>
+                   <input type="text" placeholder="Bạn đang tìm thợ gì?" class="bg-transparent border-none outline-none w-full text-sm">
+                </div>
+                <div class="flex items-center text-gray-600 font-medium">
+                    <i class="fas fa-map-marker-alt text-fixorange mr-2"></i> 123 Lê Lợi, Bến Nghé, Q.1
+                </div>
+                <button class="relative text-gray-500 hover:text-fixblue transition">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute -top-1 -right-1 flex h-4 w-4">
+                        <span class="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-white text-[10px] items-center justify-center border-2 border-white font-bold">3</span>
+                    </span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Mobile Header (Visible only on small screens) -->
+        <header class="h-14 bg-white shadow-sm flex items-center justify-between px-4 z-10 md:hidden">
+            <h1 class="text-xl font-extrabold tracking-tight">
+                <span class="text-fixblue">Fix</span><span class="text-fixorange">Now</span>
+            </h1>
+            <button class="relative text-gray-500">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth pb-20 md:pb-6" id="main-content">
+
+            <!-- TAB: TRANG CHỦ -->
+            <div id="view-home" class="view-section block animate-fade-in max-w-6xl mx-auto">
+                <!-- Mobile Search (Visible only on mobile) -->
+                <div class="md:hidden mb-6 mt-2 relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" placeholder="Bạn đang tìm thợ gì?" class="w-full bg-white border border-gray-200 rounded-full py-3 pl-10 pr-4 shadow-sm text-sm outline-none focus:border-fixblue transition">
+                </div>
+
+                <!-- Thợ đang rảnh gần đây -->
+                <div class="mb-8 mt-2">
+                    <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2">
+                        <h3 class="font-bold text-xl text-gray-800">Thợ rảnh ở gần bạn 📍</h3>
+                        <button onclick="showToast('Đang mở bản đồ vị trí thợ...', 'info')" class="text-xs font-semibold text-fixblue bg-blue-50 px-3 py-1.5 rounded-full hover:bg-blue-100 transition flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-map-marked-alt"></i> Bản đồ
+                        </button>
+                    </div>
+                    <div class="flex overflow-x-auto gap-4 pb-4 hide-scroll snap-x">
+                        <div class="min-w-[140px] bg-white rounded-xl shadow-sm border border-gray-200 p-4 shrink-0 snap-start text-center relative hover:shadow-md transition cursor-pointer" onclick="openBookingModal('Gọi Hùng - Sửa Lạnh', 'fa-snowflake')">
+                            <div class="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                            <img src="https://ui-avatars.com/api/?name=Hùng+Trần&background=14387d&color=fff" class="w-14 h-14 rounded-full mx-auto mb-2 shadow-sm">
+                            <h4 class="font-bold text-gray-800 text-sm">Trần Hùng</h4>
+                            <p class="text-[10px] text-gray-500 mb-2">Sửa Máy Lạnh • 0.5 km</p>
+                            <div class="flex justify-center items-center text-fixorange text-xs mb-3 font-bold"><i class="fas fa-star mr-1"></i> 4.9 <span class="text-gray-400 font-medium ml-1">(120)</span></div>
+                        </div>
+                        <div class="min-w-[140px] bg-white rounded-xl shadow-sm border border-gray-200 p-4 shrink-0 snap-start text-center relative hover:shadow-md transition cursor-pointer" onclick="openBookingModal('Gọi Bình - Ống Nước', 'fa-faucet')">
+                            <div class="absolute top-2 right-2 flex w-3 h-3">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full w-3 h-3 bg-fixorange border-2 border-white"></span>
+                            </div>
+                            <img src="https://ui-avatars.com/api/?name=Lê+Bình&background=ff8200&color=fff" class="w-14 h-14 rounded-full mx-auto mb-2 shadow-sm">
+                            <h4 class="font-bold text-gray-800 text-sm">Lê Bình</h4>
+                            <p class="text-[10px] text-gray-500 mb-2">Ống Nước • 1.2 km</p>
+                            <div class="flex justify-center items-center text-fixorange text-xs mb-3 font-bold"><i class="fas fa-star mr-1"></i> 5.0 <span class="text-gray-400 font-medium ml-1">(85)</span></div>
+                        </div>
+                        <div class="min-w-[140px] bg-white rounded-xl shadow-sm border border-gray-200 p-4 shrink-0 snap-start text-center relative hover:shadow-md transition cursor-pointer" onclick="openBookingModal('Gọi Tài - Chập Điện', 'fa-bolt')">
+                            <div class="absolute top-2 right-2 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                            <img src="https://ui-avatars.com/api/?name=Phan+Tài&background=14387d&color=fff" class="w-14 h-14 rounded-full mx-auto mb-2 shadow-sm">
+                            <h4 class="font-bold text-gray-800 text-sm">Phan Tài</h4>
+                            <p class="text-[10px] text-gray-500 mb-2">Sửa Chập Điện • 2.0 km</p>
+                            <div class="flex justify-center items-center text-fixorange text-xs mb-3 font-bold"><i class="fas fa-star mr-1"></i> 4.8 <span class="text-gray-400 font-medium ml-1">(210)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="lg:col-span-2 bg-gradient-to-r from-fixblue to-blue-800 rounded-xl shadow-md p-6 md:p-8 text-white relative overflow-hidden flex flex-col justify-center">
+                        <i class="fas fa-shield-alt absolute -right-10 -bottom-10 text-9xl text-white opacity-10"></i>
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">Không lo về giá, Đã có FixNow</h2>
+                        <p class="text-blue-100 mb-6 max-w-md text-sm md:text-base">Mạng lưới hơn 5.000+ thợ chuyên nghiệp sẵn sàng phục vụ bạn trong vòng 30 phút.</p>
+                        <div>
+                            <button onclick="switchTab('ai')" class="bg-white text-fixblue font-bold py-2.5 px-6 rounded-lg hover:bg-gray-100 transition shadow inline-flex items-center gap-2">
+                                <i class="fas fa-magic text-blue-500"></i> Dùng FixNow AI chuẩn đoán bệnh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="fas fa-wallet text-fixorange"></i> Ví FixNow</h3>
+                                <a href="#" class="text-xs text-fixblue font-semibold hover:underline">Nạp tiền</a>
+                            </div>
+                            <p class="text-4xl font-bold text-gray-800 mb-1">1,250,000<span class="text-xl text-gray-500 font-medium">đ</span></p>
+                            <p class="text-xs text-gray-500">Tiện lợi thanh toán sịch vụ một chạm</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex justify-between items-center bg-orange-50 p-2 rounded text-sm">
+                                <span class="text-fixorange font-bold"><i class="fas fa-ticket-alt"></i> 5 Voucher có sẵn</span>
+                                <button onclick="showToast('Áp dụng mã thành công!', 'success')" class="bg-white px-2 py-1 rounded text-xs font-semibold text-gray-700 shadow-sm">Dùng ngay</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2">
+                        <h3 class="font-bold text-xl text-gray-800">Dịch vụ Điện Lạnh</h3>
+                        <a href="#" class="text-sm font-semibold text-fixblue hover:underline">Xem tất cả</a>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-fixblue hover:shadow-md transition cursor-pointer text-center group" onclick="openBookingModal('Sửa Máy Lạnh', 'fa-snowflake')">
+                            <div class="w-14 h-14 mx-auto bg-blue-50 text-fixblue rounded-xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-snowflake"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sửa Máy Lạnh</h4>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-fixblue hover:shadow-md transition cursor-pointer text-center group" onclick="openBookingModal('Vệ sinh Máy Lạnh', 'fa-fan')">
+                            <div class="w-14 h-14 mx-auto bg-cyan-50 text-cyan-500 rounded-xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-fan"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Vệ sinh Máy Lạnh</h4>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-fixblue hover:shadow-md transition cursor-pointer text-center group" onclick="openBookingModal('Sửa Tủ Lạnh', 'fa-box')">
+                            <div class="w-14 h-14 mx-auto bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sửa Tủ Lạnh</h4>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-fixblue hover:shadow-md transition cursor-pointer text-center group" onclick="openBookingModal('Sửa Máy Giặt', 'fa-tshirt')">
+                            <div class="w-14 h-14 mx-auto bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-tshirt"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sửa Máy Giặt</h4>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-end mb-4 border-b border-gray-200 pb-2">
+                        <h3 class="font-bold text-xl text-gray-800">Dịch vụ Điện Nước & Gia Dụng</h3>
+                        <a href="#" class="text-sm font-semibold text-fixorange hover:underline">Xem tất cả</a>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-fixorange hover:shadow-md transition cursor-pointer text-center group" onclick="openBookingModal('Sửa Ống Nước Rò Rỉ', 'fa-faucet')">
+                            <div class="w-14 h-14 mx-auto bg-orange-50 text-fixorange rounded-xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-faucet"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sửa Ống Nước</h4>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-yellow-500 hover:shadow-md transition cursor-pointer text-center group" onclick="openBookingModal('Sửa Chập Điện', 'fa-bolt')">
+                            <div class="w-14 h-14 mx-auto bg-yellow-50 text-yellow-500 rounded-xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sửa Chập Điện</h4>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-red-500 hover:shadow-md transition cursor-pointer text-center group" onclick="openBookingModal('Sửa Bếp Từ / Hồng Ngoại', 'fa-fire-burner')">
+                            <div class="w-14 h-14 mx-auto bg-red-50 text-red-500 rounded-xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-fire-burner"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sửa Bếp Từ / Điện</h4>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:border-gray-500 hover:shadow-md transition cursor-pointer text-center group" onclick="openBookingModal('Sự cố khác', 'fa-tools')">
+                            <div class="w-14 h-14 mx-auto bg-gray-100 text-gray-600 rounded-xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-800 text-sm">Sự cố khác</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ưu đãi hot & Banner -->
+                <div class="mb-8">
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="font-bold text-xl text-gray-800">Ưu đãi hôm nay 🔥</h3>
+                    </div>
+                    <div class="flex overflow-x-auto gap-4 pb-4 hide-scroll snap-x">
+                        <div class="min-w-[280px] md:min-w-[320px] bg-gradient-to-r from-orange-400 to-red-500 rounded-xl p-5 text-white shadow-sm snap-start relative overflow-hidden">
+                            <i class="fas fa-ticket-alt absolute -right-2 -bottom-2 text-6xl opacity-20"></i>
+                            <span class="bg-white text-red-500 text-[10px] font-bold px-2 py-1 rounded uppercase mb-2 inline-block shadow-sm">Giảm 50K</span>
+                            <h4 class="font-bold text-lg leading-tight mb-1">Mùa Hè Mát Lạnh</h4>
+                            <p class="text-xs text-orange-100 mb-4">Áp dụng cho mọi dịch vụ Điện Lạnh. Số lượng có hạn.</p>
+                            <button onclick="showToast('Đã lưu mã thành công!', 'success')" class="bg-white text-red-500 text-xs font-bold py-1.5 px-4 rounded-full shadow-sm hover:bg-gray-50">Lưu mã</button>
+                        </div>
+                        <div class="min-w-[280px] md:min-w-[320px] bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-5 text-white shadow-sm snap-start relative overflow-hidden">
+                            <i class="fas fa-bolt absolute -right-2 -bottom-2 text-6xl opacity-20"></i>
+                            <span class="bg-white text-blue-600 text-[10px] font-bold px-2 py-1 rounded uppercase mb-2 inline-block shadow-sm">Khách hàng mới</span>
+                            <h4 class="font-bold text-lg leading-tight mb-1">Tặng 100K Cọc</h4>
+                            <p class="text-xs text-blue-100 mb-4">Dành cho đơn Sửa Điện Nước đầu tiên trên FixNow.</p>
+                            <button onclick="showToast('Đã lưu mã thành công!', 'success')" class="bg-white text-blue-600 text-xs font-bold py-1.5 px-4 rounded-full shadow-sm hover:bg-gray-50">Lưu mã</button>
+                        </div>
+                        <div class="min-w-[280px] md:min-w-[320px] bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-5 text-white shadow-sm snap-start relative overflow-hidden">
+                            <i class="fas fa-wallet absolute -right-2 -bottom-2 text-6xl opacity-20"></i>
+                            <span class="bg-white text-green-600 text-[10px] font-bold px-2 py-1 rounded uppercase mb-2 inline-block shadow-sm">Hoàn tiền 5%</span>
+                            <h4 class="font-bold text-lg leading-tight mb-1">Thanh toán qua Ví</h4>
+                            <p class="text-xs text-green-100 mb-4">Nhận lại 5% hóa đơn khi dùng Ví FixNow, tối đa 50K.</p>
+                            <button onclick="showToast('Đã lưu mã thành công!', 'success')" class="bg-white text-green-600 text-xs font-bold py-1.5 px-4 rounded-full shadow-sm hover:bg-gray-50">Lưu mã</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cẩm nang & Mẹo vặt -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="font-bold text-xl text-gray-800">Cẩm nang & Mẹo vặt 💡</h3>
+                        <a href="#" class="text-sm font-semibold text-fixblue hover:underline">Xem thêm</a>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Card 1 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group cursor-pointer hover:shadow-md transition">
+                            <div class="h-32 bg-gray-200 relative overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1581092921461-7d3014b2d102?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Máy lạnh" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <span class="absolute bottom-2 left-3 bg-fixblue text-white text-[10px] font-bold px-2 py-0.5 rounded">Mẹo Điện Lạnh</span>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-bold text-gray-800 mb-1 group-hover:text-fixblue transition">Bao lâu thì nên vệ sinh máy lạnh 1 lần?</h4>
+                                <p class="text-xs text-gray-500 line-clamp-2">Để máy lạnh hoạt động bền bỉ và tiết kiệm điện, bạn nên vệ sinh định kỳ từ 3-6 tháng/lần tùy nhu cầu sử dụng...</p>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <span class="text-[11px] text-gray-400"><i class="far fa-clock"></i> 3 phút đọc</span>
+                                    <span class="text-xs font-bold text-fixorange">Đọc ngay <i class="fas fa-chevron-right text-[10px]"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group cursor-pointer hover:shadow-md transition">
+                            <div class="h-32 bg-gray-200 relative overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1558611848-73f7eb4001a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Ống nước" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <span class="absolute bottom-2 left-3 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">Xử lý Nhanh</span>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-bold text-gray-800 mb-1 group-hover:text-fixblue transition">Cách xử lý vòi nước rỉ giữa đêm</h4>
+                                <p class="text-xs text-gray-500 line-clamp-2">Đừng hoảng! Bước 1 là khóa van nước tổng. Sau đó thử dùng băng keo cao su non quấn tạm quanh ren trước khi đợi thợ sáng mai.</p>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <span class="text-[11px] text-gray-400"><i class="far fa-clock"></i> 2 phút đọc</span>
+                                    <span class="text-xs font-bold text-fixorange">Đọc ngay <i class="fas fa-chevron-right text-[10px]"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3 (Hidden on smaller tablets, visible on large desktops) -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group cursor-pointer hover:shadow-md transition hidden md:block">
+                            <div class="h-32 bg-gray-200 relative overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Chập điện" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <span class="absolute bottom-2 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">An toàn Điện</span>
+                            </div>
+                            <div class="p-4">
+                                <h4 class="font-bold text-gray-800 mb-1 group-hover:text-fixblue transition">Dấu hiệu đường điện nhà bạn đang quá tải</h4>
+                                <p class="text-xs text-gray-500 line-clamp-2">CP hay nhảy, ổ cắm có vết ố vàng đen, dây điện sờ vào thấy nóng là những dấu hiệu cực kỳ nguy hiểm...</p>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <span class="text-[11px] text-gray-400"><i class="far fa-clock"></i> 5 phút đọc</span>
+                                    <span class="text-xs font-bold text-fixorange">Đọc ngay <i class="fas fa-chevron-right text-[10px]"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: FIXNOW AI -->
+            <div id="view-ai" class="view-section hidden animate-fade-in max-w-4xl mx-auto h-full flex flex-col">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-1 flex flex-col overflow-hidden">
+                    <div class="p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-full flex justify-center items-center backdrop-blur-sm">
+                                <i class="fas fa-robot text-xl text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold">Trợ lý FixNow AI</h3>
+                                <p class="text-xs text-blue-100">Luôn sẵn sàng hỗ trợ bạn chẩn đoán sự cố</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-4 overflow-y-auto bg-gray-50 space-y-4">
+                        <div class="flex gap-3 max-w-[80%]">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600"><i class="fas fa-robot"></i></div>
+                            <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm text-sm">
+                                Chào chị Lan! Đồ đạc trong nhà chị đang gặp vấn đề gì ạ? Chị hãy mô tả triệu chứng hoặc chụp ảnh gửi cho em nhé. Em sẽ chẩn đoán bệnh và gọi đúng thợ cho mình ạ.
+                            </div>
+                        </div>
+                        <div class="flex gap-3 max-w-[80%] ml-auto justify-end">
+                            <div class="bg-fixblue text-white p-3 rounded-2xl rounded-tr-none shadow-sm text-sm">
+                                Máy lạnh phòng ngủ nhà chị cứ bật lên chạy được tầm 10 phút là tự động ngắt, không có hơi lạnh. Khắc phục sao em?
+                            </div>
+                            <img src="https://ui-avatars.com/api/?name=Lan+Nguyen&background=ff8200&color=fff" class="w-8 h-8 rounded-full flex-shrink-0">
+                        </div>
+                        <div class="flex gap-3 max-w-[80%]">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600"><i class="fas fa-robot"></i></div>
+                            <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-gray-200 shadow-sm text-sm">
+                                <p class="mb-2">Dựa trên mô tả của chị, lỗi máy lạnh tự ngắt và không mát có thể do 3 nguyên nhân chính:</p>
+                                <ul class="list-disc pl-5 mb-3 space-y-1 text-gray-700">
+                                    <li>Thiếu gas hoặc rò rỉ gas.</li>
+                                    <li>Cảm biến nhiệt độ (Sensor) bị hỏng.</li>
+                                    <li>Quạt dàn nóng không chạy khiến block quá dòng rồi tự ngắt bảo vệ.</li>
+                                </ul>
+                                <p class="font-bold text-fixblue mb-2">Đề xuất giải pháp:</p>
+                                <div class="bg-blue-50 border border-blue-100 p-3 rounded-lg mb-2">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-bold text-gray-800 text-base">Thợ Điện Lạnh Kiểm Tra Tận Nơi</span>
+                                        <span class="bg-orange-100 text-fixorange text-[10px] font-bold px-2 py-0.5 rounded">Tối ưu</span>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mb-2">Thợ sẽ qua đo gas, đo dòng lốc máy và kiểm tra cảm biến để báo bệnh chính xác.</p>
+                                    <button onclick="switchTab('home')" class="bg-fixblue text-white text-xs font-bold py-1.5 px-3 rounded shadow hover:bg-blue-800 w-full text-center block">Đặt Thợ Này Ngay</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: ACTIVITY / ORDERS -->
+            <div id="view-activity" class="view-section hidden animate-fade-in max-w-5xl mx-auto">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full md:w-64 flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 hide-scroll">
+                        <button onclick="switchActTab('active')" id="act-tab-active" class="px-4 py-2 bg-fixblue text-white rounded-lg text-sm font-bold shadow text-left whitespace-nowrap transition">Đang tiến hành <span class="bg-red-500 text-white rounded-full px-1.5 ml-1 text-xs" id="desktop-activity-badge">1</span></button>
+                        <button onclick="switchActTab('pending')" id="act-tab-pending" class="px-4 py-2 bg-white text-gray-600 hover:bg-gray-50 border rounded-lg text-sm font-medium text-left whitespace-nowrap transition">Chờ xác nhận</button>
+                        <button onclick="switchActTab('history')" id="act-tab-history" class="px-4 py-2 bg-white text-gray-600 hover:bg-gray-50 border rounded-lg text-sm font-medium text-left whitespace-nowrap transition">Lịch sử</button>
+                    </div>
+
+                    <div class="flex-1 space-y-4 relative" id="orders-list-container">
+                        <!-- Active view -->
+                        <div id="act-view-active">
+                            <!-- Order current -->
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative group">
+                                <div class="p-4 border-b border-gray-50 flex justify-between items-center bg-blue-50">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white text-fixblue rounded-lg flex items-center justify-center font-bold text-xl shadow-sm"><i class="fas fa-snowflake"></i></div>
+                                        <div>
+                                            <h4 class="font-bold text-fixblue text-lg">Sửa máy lạnh Panasonic</h4>
+                                            <p class="text-xs text-gray-500 mt-1"><i class="far fa-clock"></i> Hôm nay, 14:00 - 15:00 • Mã: FN-99281</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-white border text-blue-600 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm"><i class="fas fa-motorcycle"></i> Thợ đang di chuyển</span>
+                                </div>
+                                
+                                <div class="p-5 flex flex-col md:flex-row gap-6">
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-4 border-b pb-4 mb-4">
+                                            <img src="https://ui-avatars.com/api/?name=Vu+Hai+Nam&background=14387d&color=fff" class="w-16 h-16 rounded-full border shadow-sm">
+                                            <div>
+                                                <p class="font-bold text-gray-800 text-lg">Thợ: Vũ Hải Nam</p>
+                                                <div class="flex items-center text-sm text-fixorange gap-1 mt-1">
+                                                    <i class="fas fa-star"></i> 4.9 <span class="text-gray-500 ml-1 font-medium">• Đã làm 124 chuyến</span>
+                                                </div>
+                                                <div class="flex gap-2 mt-2">
+                                                    <button onclick="showToast('Đang kết nối đến Chat...', 'info')" class="px-3 py-1 rounded bg-blue-50 text-fixblue text-xs font-bold hover:bg-blue-100 transition"><i class="fas fa-comment-dots"></i> Chat ngay</button>
+                                                    <button class="px-3 py-1 rounded bg-green-50 text-green-600 text-xs font-bold hover:bg-green-100 transition"><i class="fas fa-phone-alt"></i> 090 123 4567</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-semibold text-gray-500 uppercase mb-2">Chi tiết đơn</p>
+                                            <p class="text-sm text-gray-800 mb-1"><i class="fas fa-map-marker-alt w-5 text-gray-400"></i> 123 Lê Lợi, P. Bến Nghé, Quận 1</p>
+                                            <p class="text-sm text-gray-800 mb-1"><i class="fas fa-tools w-5 text-gray-400"></i> "Máy lạnh mở không lạnh, chỉ ra gió"</p>
+                                            <p class="text-sm text-gray-800"><i class="fas fa-wallet w-5 text-gray-400"></i> Phí dự kiến: <strong class="text-fixorange">350,000đ</strong></p>
+                                        </div>
+                                    </div>
+                                    <div class="md:w-1/3 bg-gray-50 rounded-lg p-4 h-48 relative overflow-hidden" style="background-image: url('https://techcrunch.com/wp-content/uploads/2015/08/safe_image.gif'); background-size: cover; background-position: center;">
+                                    <div class="absolute bottom-2 right-2 bg-white px-2 py-1 rounded shadow text-xs font-bold bg-opacity-90">Cách bạn: 1.2km</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- End active view -->
+                        
+                        <!-- Pending View -->
+                        <div id="act-view-pending" class="hidden animate-fade-in space-y-4">
+                            <div class="bg-white rounded-xl shadow-sm border border-orange-200 overflow-hidden">
+                                <div class="p-4 border-b border-gray-50 flex justify-between items-center bg-orange-50">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white text-fixorange rounded-lg flex items-center justify-center font-bold text-xl shadow-sm"><i class="fas fa-faucet"></i></div>
+                                        <div>
+                                            <h4 class="font-bold text-fixorange text-lg">Sửa ống nước rò rỉ</h4>
+                                            <p class="text-xs text-gray-500 mt-1"><i class="far fa-clock"></i> Vừa đặt • Mã: FN-10191</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-white border border-orange-300 text-orange-500 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm"><i class="fas fa-hourglass-half"></i> Đang tìm thợ</span>
+                                </div>
+                                <div class="p-5">
+                                    <div class="flex items-center gap-3 mb-4 text-sm text-gray-600">
+                                        <i class="fas fa-map-marker-alt text-gray-400 w-5"></i> 123 Lê Lợi, P. Bến Nghé, Quận 1
+                                    </div>
+                                    <div class="flex items-center gap-3 mb-4 text-sm text-gray-600">
+                                        <i class="fas fa-tools text-gray-400 w-5"></i> "Vòi bồn rửa chén bị rò, nhỏ giọt liên tục"
+                                    </div>
+                                    <div class="flex gap-3 mt-4">
+                                        <button onclick="showToast('Đã hủy đơn FN-10191', 'warning')" class="flex-1 border border-red-200 text-red-500 text-sm font-bold py-2 rounded-lg hover:bg-red-50 transition">Hủy đơn</button>
+                                        <button onclick="showToast('Đang liên hệ tổng đài...', 'info')" class="flex-1 bg-blue-50 text-fixblue text-sm font-bold py-2 rounded-lg hover:bg-blue-100 transition"><i class="fas fa-headset"></i> Liên hệ hỗ trợ</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- History View -->
+                        <div id="act-view-history" class="hidden animate-fade-in space-y-4">
+                             <div class="bg-white rounded-xl border border-gray-200 overflow-hidden relative opacity-75 hover:opacity-100 transition shadow-sm hover:shadow">
+                                <div class="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white text-gray-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-sm"><i class="fas fa-fan"></i></div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-700 text-lg">Vệ sinh máy lạnh</h4>
+                                            <p class="text-xs text-gray-500 mt-1">10/02/2026 • Mã: FN-83112</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-gray-200 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap"><i class="fas fa-check-double"></i> Đã hoàn thành</span>
+                                </div>
+                                <div class="p-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">Thợ: Nguyễn Đình Kiên</p>
+                                        <p class="text-sm text-gray-600 mt-1"><i class="fas fa-wallet text-gray-400"></i> Tổng thanh toán: <strong>200,000đ</strong></p>
+                                    </div>
+                                    <button onclick="showToast('Cảm ơn bạn đã đánh giá!', 'success')" class="border border-fixorange text-fixorange px-4 py-2 rounded-lg hover:bg-orange-50 text-sm font-bold bg-white shadow-sm transition">Đánh giá lại</button>
+                                </div>
+                             </div>
+                             <div class="bg-white rounded-xl border border-gray-200 overflow-hidden relative opacity-75 hover:opacity-100 transition shadow-sm hover:shadow">
+                                <div class="p-4 border-b border-gray-50 flex justify-between items-center bg-gray-50">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-white text-gray-500 rounded-lg flex items-center justify-center font-bold text-xl shadow-sm"><i class="fas fa-bolt"></i></div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-700 text-lg">Sửa chập điện</h4>
+                                            <p class="text-xs text-gray-500 mt-1">20/01/2026 • Mã: FN-71045</p>
+                                        </div>
+                                    </div>
+                                    <span class="bg-gray-200 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap"><i class="fas fa-check-double"></i> Đã hoàn thành</span>
+                                </div>
+                                <div class="p-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">Thợ: Phan Văn Tài</p>
+                                        <p class="text-sm text-gray-600 mt-1"><i class="fas fa-wallet text-gray-400"></i> Tổng thanh toán: <strong>450,000đ</strong></p>
+                                        <div class="flex items-center gap-1 mt-1 text-fixorange text-sm">
+                                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                            <span class="text-xs text-gray-500 ml-1">Bạn đã đánh giá 5 sao</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="showToast('Đặt lại dịch vụ này?', 'info')" class="border border-fixblue text-fixblue px-4 py-2 rounded-lg hover:bg-blue-50 text-sm font-bold bg-white shadow-sm transition">Đặt lại</button>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: WALLET -->
+            <div id="view-wallet" class="view-section hidden animate-fade-in max-w-5xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Ví FixNow -->
+                    <div class="md:col-span-1 bg-gradient-to-r from-fixblue to-blue-800 rounded-xl shadow-md p-6 text-white relative overflow-hidden">
+                        <i class="fas fa-wallet absolute -right-4 -bottom-4 text-9xl text-white opacity-10"></i>
+                        <p class="text-blue-100 font-medium mb-1">Ví FixNow</p>
+                        <h2 class="text-4xl font-bold mb-6">1,250,000<span class="text-xl font-normal">đ</span></h2>
+                        <div class="flex gap-4">
+                            <button onclick="showToast('Hệ thống thanh toán đang đóng do quá tải', 'warning')" class="flex-1 bg-white text-fixblue font-bold px-4 py-2 rounded-lg shadow-sm hover:bg-gray-100 text-sm"><i class="fas fa-plus-circle"></i> Nạp tiền</button>
+                            <button onclick="showToast('Số dư tối thiểu để rút là 2.000.000đ', 'error')" class="flex-1 bg-blue-700 border border-blue-500 text-white font-bold px-4 py-2 rounded-lg hover:bg-blue-600 text-sm"><i class="fas fa-arrow-down"></i> Rút tiền</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Voucher Highlight -->
+                    <div class="md:col-span-2 bg-gradient-to-br from-orange-400 to-fixorange rounded-xl shadow-md p-6 text-white relative overflow-hidden flex flex-col justify-center">
+                        <i class="fas fa-ticket-alt absolute -right-6 -bottom-6 text-9xl text-white opacity-20"></i>
+                        <h3 class="font-bold text-xl mb-2 z-10">Bạn đang có 5 Ưu đãi có sẵn</h3>
+                        <p class="text-orange-100 text-sm max-w-sm mb-4 z-10">Chọn ngay mã giảm giá phù hợp cho dịch vụ tiếp theo để tiết kiệm chi phí sửa nhà.</p>
+                        <div class="z-10">
+                            <button class="bg-white text-fixorange font-bold px-6 py-2 rounded-lg shadow-sm hover:bg-gray-100 text-sm">Xem Kho Voucher</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Lịch sử giao dịch -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 class="font-bold text-gray-800 text-lg">Lịch sử giao dịch</h3>
+                            <a href="#" class="text-sm font-semibold text-fixblue">Xem tất cả</a>
+                        </div>
+                        <div class="divide-y divide-gray-100">
+                            <div class="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center font-bold shadow-sm"><i class="fas fa-arrow-up"></i></div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 text-sm">Thanh toán Sửa máy lạnh</p>
+                                        <p class="text-xs text-gray-500 mt-1">Hôm nay, 16:30 • Đơn FN-99281</p>
+                                    </div>
+                                </div>
+                                <span class="font-bold text-red-500">- 350.000đ</span>
+                            </div>
+                            <div class="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold shadow-sm"><i class="fas fa-arrow-down"></i></div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 text-sm">Nạp tiền từ Vietcombank</p>
+                                        <p class="text-xs text-gray-500 mt-1">Hôm qua, 09:15</p>
+                                    </div>
+                                </div>
+                                <span class="font-bold text-green-600">+ 1.000.000đ</span>
+                            </div>
+                            <div class="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                                <div class="flex gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center font-bold shadow-sm"><i class="fas fa-arrow-up"></i></div>
+                                    <div>
+                                        <p class="font-bold text-gray-800 text-sm">Thanh toán Vệ sinh máy giặt</p>
+                                        <p class="text-xs text-gray-500 mt-1">20/02/2026 • Đơn FN-88214</p>
+                                    </div>
+                                </div>
+                                <span class="font-bold text-red-500">- 200.000đ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách Voucher -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 class="font-bold text-gray-800 text-lg">Mã giảm giá sắp hết hạn</h3>
+                        </div>
+                        <div class="p-4 space-y-4">
+                            <div class="border border-orange-200 rounded-xl overflow-hidden flex bg-white shadow-sm hover:shadow relative">
+                                <div class="absolute -left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-gray-50 rounded-full border-r border-orange-200"></div>
+                                <div class="absolute -right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-gray-50 rounded-full border-l border-orange-200"></div>
+                                
+                                <div class="w-24 bg-orange-50 flex flex-col justify-center items-center border-r border-dashed border-orange-200 text-fixorange">
+                                    <span class="text-xs font-bold uppercase">GIẢM</span>
+                                    <span class="text-2xl font-extrabold -mt-1">50<span class="text-sm">K</span></span>
+                                </div>
+                                <div class="flex-1 p-3 flex justify-between items-center">
+                                    <div>
+                                        <p class="font-bold text-gray-800 text-sm">Sửa Máy Lạnh Mùa Hè</p>
+                                        <p class="text-[11px] text-gray-500 mt-0.5">HSD: Hết hôm nay</p>
+                                    </div>
+                                    <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded">HSA50</span>
+                                </div>
+                            </div>
+
+                            <div class="border border-blue-200 rounded-xl overflow-hidden flex bg-white shadow-sm hover:shadow relative">
+                                <div class="absolute -left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-gray-50 rounded-full border-r border-blue-200"></div>
+                                <div class="absolute -right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 bg-gray-50 rounded-full border-l border-blue-200"></div>
+                                
+                                <div class="w-24 bg-blue-50 flex flex-col justify-center items-center border-r border-dashed border-blue-200 text-fixblue">
+                                    <span class="text-xs font-bold uppercase">GIẢM</span>
+                                    <span class="text-2xl font-extrabold -mt-1">10<span class="text-sm">%</span></span>
+                                </div>
+                                <div class="flex-1 p-3 flex justify-between items-center">
+                                    <div>
+                                        <p class="font-bold text-gray-800 text-sm">Mã Khách Hàng Thân Thiết</p>
+                                        <p class="text-[11px] text-gray-500 mt-0.5">Tối đa 30K. HSD: 15/03</p>
+                                    </div>
+                                    <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded">VIP10</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: TIN NHẮN / THÔNG BÁO -->
+            <div id="view-notifications" class="view-section hidden animate-fade-in max-w-5xl mx-auto h-full flex flex-col pb-10">
+                <div class="flex gap-3 mb-6 mt-2">
+                    <button class="px-5 py-2.5 bg-fixblue text-white rounded-full text-sm font-bold shadow-md flex-1 text-center border-2 border-fixblue transition">Hộp thư (1)</button>
+                    <button onclick="showToast('Không có thông báo mới', 'info')" class="px-5 py-2.5 bg-white text-gray-600 border-2 border-gray-200 hover:border-gray-300 rounded-full text-sm font-medium flex-1 text-center relative transition shadow-sm">
+                        Khuyến mãi <span class="absolute top-0 right-4 w-3 h-3 bg-red-500 rounded-full translate-x-1/2 -translate-y-1/2 border-2 border-white shadow-sm"></span>
+                    </button>
+                </div>
+                
+                <h3 class="font-bold text-gray-800 mb-3 px-1 text-lg">Đang diễn ra</h3>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-none overflow-hidden mb-6">
+                     <div class="p-4 flex gap-4 bg-blue-50/50 cursor-pointer hover:bg-gray-50 transition items-center" onclick="showToast('Đang tải tin nhắn...', 'info')">
+                        <div class="relative">
+                            <img src="https://ui-avatars.com/api/?name=Vu+Hai+Nam&background=14387d&color=fff" class="w-14 h-14 rounded-full shadow-sm border border-white">
+                            <span class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-bold text-gray-800 text-base">Vũ Hải Nam (Sửa máy lạnh)</h4>
+                                <span class="text-xs text-blue-600 font-bold bg-blue-100 px-2 py-0.5 rounded">14:02</span>
+                            </div>
+                            <p class="text-sm text-gray-800 font-medium line-clamp-1">Dạ em sắp tới nơi rồi, chị chuẩn bị mở cửa giúp em nhé.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="font-bold text-gray-800 mb-3 px-1 text-lg">Khác</h3>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex-none overflow-hidden mb-6">
+                    <div class="p-4 flex gap-4 cursor-pointer hover:bg-gray-50 transition items-center" onclick="showToast('Khuyến mãi của FixNow')">
+                        <div class="w-14 h-14 rounded-full bg-orange-100 text-fixorange flex items-center justify-center flex-shrink-0 text-xl border border-white shadow-sm">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm text-gray-800">Tặng bạn 50,000đ khi đặt điện lạnh</h4>
+                            <p class="text-sm text-gray-600 mt-1 line-clamp-1">Ưu đãi độc quyền. Nhập mã HSA50...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="font-bold text-gray-800 mb-3 px-1 text-lg">Tin nhắn cũ</h3>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 divide-y divide-gray-100 flex-1 overflow-y-auto hide-scroll">
+                     <div class="p-4 flex gap-4 cursor-pointer hover:bg-gray-50 transition items-center" onclick="showToast('Tin nhắn cũ đã đóng', 'error')">
+                        <div class="relative">
+                            <img src="https://ui-avatars.com/api/?name=Nguyen+Dinh+Kien&background=9ca3af&color=fff" class="w-14 h-14 rounded-full shadow-sm opacity-80">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-bold text-gray-600 text-base">Nguyễn Đình Kiên</h4>
+                                <span class="text-xs text-gray-400">10/02</span>
+                            </div>
+                            <p class="text-sm text-gray-500 line-clamp-1">Cảm ơn chị đã dùng dịch vụ. Lần sau máy dơ cứ gọi em nhé!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: PROFILE / SETTINGS -->
+            <div id="view-settings" class="view-section hidden animate-fade-in max-w-4xl mx-auto pb-10">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                    <div class="bg-gradient-to-r from-gray-100 to-white p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 border-b border-gray-200">
+                        <div class="relative">
+                            <img src="https://ui-avatars.com/api/?name=Lan+Nguyen&background=ff8200&color=fff" class="w-24 h-24 rounded-full border-4 border-white shadow-md">
+                            <button class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-gray-800 text-white flex items-center justify-center border-2 border-white shadow hover:bg-fixblue transition">
+                                <i class="fas fa-camera text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="text-center md:text-left flex-1">
+                            <h2 class="text-2xl font-bold text-gray-800">Chị Lan Nguyễn</h2>
+                            <p class="text-gray-500 mt-1">0901 234 567 | lannguyen_sg@email.com</p>
+                            <div class="mt-3 flex items-center justify-center md:justify-start gap-2">
+                                <span class="text-xs font-bold uppercase bg-orange-100 text-fixorange px-3 py-1 rounded-full"><i class="fas fa-crown"></i> Khách hàng VIP Mức 2</span>
+                                <span class="text-xs font-medium bg-green-100 text-green-700 px-3 py-1 rounded-full"><i class="fas fa-check-circle"></i> Đã kích hoạt ví</span>
+                            </div>
+                        </div>
+                        <div>
+                            <button onclick="showToast('Chức năng sửa thông tin cá nhân', 'info')" class="bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-semibold hover:bg-gray-50 shadow-sm whitespace-nowrap"><i class="fas fa-pencil-alt mr-2 text-gray-400"></i>Sửa hồ sơ</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100 border-b border-gray-100 bg-white">
+                        <div class="p-4 text-center">
+                            <p class="text-xl font-bold text-fixblue">42</p>
+                            <p class="text-xs text-gray-500 mt-1">Lần gọi thợ</p>
+                        </div>
+                        <div class="p-4 text-center">
+                            <p class="text-xl font-bold text-fixorange">9</p>
+                            <p class="text-xs text-gray-500 mt-1">Voucher đang có</p>
+                        </div>
+                        <div class="p-4 text-center">
+                            <p class="text-xl font-bold text-green-600">3</p>
+                            <p class="text-xs text-gray-500 mt-1">Địa chỉ đã lưu</p>
+                        </div>
+                        <div class="p-4 text-center">
+                            <p class="text-xl font-bold text-purple-600">1.2K</p>
+                            <p class="text-xs text-gray-500 mt-1">Điểm FixNow Point</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Column 1 -->
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <h3 class="font-bold text-sm text-gray-500 uppercase px-6 pt-5 pb-2">Tùy chọn Của Tôi</h3>
+                            <div class="divide-y divide-gray-100">
+                                <div class="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer transition">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-blue-50 text-fixblue rounded-lg flex items-center justify-center"><i class="fas fa-map-marker-alt"></i></div>
+                                        <div><p class="font-bold text-gray-800 text-sm">Sổ địa chỉ</p><p class="text-xs text-gray-500 mt-0.5">Nhà riêng, Công ty, Bố mẹ...</p></div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                                <div class="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer transition">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-green-50 text-green-600 rounded-lg flex items-center justify-center"><i class="fas fa-heart"></i></div>
+                                        <div><p class="font-bold text-gray-800 text-sm">Thợ Yêu Thích</p><p class="text-xs text-gray-500 mt-0.5">Danh sách thợ quen bạn hay gọi</p></div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                                <div class="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer transition">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center"><i class="fas fa-credit-card"></i></div>
+                                        <div><p class="font-bold text-gray-800 text-sm">Ngân hàng Liên Kết</p><p class="text-xs text-gray-500 mt-0.5">Vietcombank, MoMo, ZaloPay...</p></div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2 -->
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                            <h3 class="font-bold text-sm text-gray-500 uppercase px-6 pt-5 pb-2">Hỗ Trợ & Bảo Mật</h3>
+                            <div class="divide-y divide-gray-100">
+                                <div class="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer transition">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center"><i class="fas fa-shield-alt"></i></div>
+                                        <div><p class="font-bold text-gray-800 text-sm">Khóa bảo mật</p><p class="text-xs text-gray-500 mt-0.5">Đổi mật khẩu, mã PIN tĩnh</p></div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                                <div class="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer transition">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-orange-50 text-fixorange rounded-lg flex items-center justify-center"><i class="fas fa-headset"></i></div>
+                                        <div><p class="font-bold text-gray-800 text-sm">Trung tâm Hỗ trợ FixNow</p><p class="text-xs text-gray-500 mt-0.5">FAQ, Liên hệ tổng đài 24/7</p></div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                                <div class="flex items-center justify-between p-5 hover:bg-gray-50 cursor-pointer transition">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center"><i class="fas fa-file-contract"></i></div>
+                                        <div><p class="font-bold text-gray-800 text-sm">Chính sách & Quy định</p><p class="text-xs text-gray-500 mt-0.5">Quy tắc ứng xử nền tảng</p></div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Logout Button -->
+                        <button onclick="showToast('Đã đăng xuất thành công', 'success')" class="w-full bg-white border border-gray-200 rounded-xl p-4 text-center text-red-500 font-bold hover:bg-red-50 hover:border-red-200 transition shadow-sm relative overflow-hidden">
+                            ĐĂNG XUẤT KHỎI THIẾT BỊ NÀY
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation (Mobile Only) -->
+        <nav class="md:hidden bg-white border-t border-gray-200 flex justify-around p-2 pb-safe shadow-[0_-5px_15px_-10px_rgba(0,0,0,0.1)] sticky bottom-0 z-20">
+            <button onclick="switchTab('home')" id="nav-mobile-home" class="nav-mobile flex flex-col items-center gap-1 text-fixblue font-semibold w-16">
+                <i class="fas fa-home text-xl"></i>
+                <span class="text-[10px]">Trang chủ</span>
+            </button>
+            <button onclick="switchTab('activity')" id="nav-mobile-activity" class="nav-mobile flex flex-col items-center gap-1 text-gray-400 font-medium w-16 relative">
+                <i class="fas fa-clipboard-list text-xl"></i>
+                <span class="text-[10px]">Hoạt động</span>
+                <span class="absolute top-0 right-3 bg-fixorange text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-white">1</span>
+            </button>
+            <button onclick="switchTab('notifications')" id="nav-mobile-notifications" class="nav-mobile flex flex-col items-center gap-1 text-gray-400 font-medium w-16 relative">
+                <i class="fas fa-bell text-xl"></i>
+                <span class="text-[10px]">Thông báo</span>
+                <span class="absolute top-0 right-3 bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-white">3</span>
+            </button>
+            <button onclick="switchTab('settings')" id="nav-mobile-settings" class="nav-mobile flex flex-col items-center gap-1 text-gray-400 font-medium w-16">
+                <i class="fas fa-user text-xl"></i>
+                <span class="text-[10px]">Tài khoản</span>
+            </button>
+        </nav>
+        
+        <!-- MODAL ĐẶT LỊCH (BOOKING MODAL) CHUẨN DESKTOP & MOBILE -->
+        <div id="booking-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-0 md:p-6 backdrop-blur-sm">
+            <div class="bg-white w-full h-full md:h-auto md:max-w-2xl md:rounded-2xl shadow-2xl flex flex-col transform transition-transform translate-y-full md:translate-y-0 duration-300" id="booking-modal-content">
+                
+                <!-- Modal Header -->
+                <div class="h-14 bg-white border-b flex items-center justify-between px-4 md:px-6 shadow-sm z-10 md:rounded-t-2xl">
+                    <button onclick="closeBookingModal()" class="w-8 h-8 flex items-center justify-center text-gray-600 rounded-full hover:bg-gray-100">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                    <h2 class="font-bold text-lg text-gray-800" id="modal-title">Đặt dịch vụ</h2>
+                    <div class="w-8"></div>
+                </div>
+
+                <!-- Modal Body: Step 1 -->
+                <div id="booking-step-1" class="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50 md:bg-white pb-24 md:pb-8">
+                    <div class="flex items-center gap-3 bg-blue-50 text-fixblue p-4 rounded-xl mb-6">
+                        <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-2xl shadow-sm"><i id="modal-icon" class="fas fa-tools"></i></div>
+                        <div>
+                            <p class="font-bold text-base">Thợ chuyên nghiệp 5 sao</p>
+                            <p class="text-xs">Đến tận nhà kiểm tra, báo giá rõ ràng rồi mới sửa.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div class="bg-white md:bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Tình trạng cụ thể</label>
+                            <select class="w-full appearance-none outline-none text-base font-medium border-b border-gray-200 py-2 bg-transparent text-gray-800 pb-2">
+                                <option>Không biết rõ nguyên nhân, cần thợ kiểm tra</option>
+                                <option>Máy không hoạt động</option>
+                                <option>Bị chập điện / nhảy CB</option>
+                                <option>Có tiếng kêu lạ / có mùi hôi</option>
+                                <option>Cần lắp đặt / Di dời thiết bị</option>
+                            </select>
+                        </div>
+
+                        <div class="bg-white md:bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Ghi chú cho thợ (Không bắt buộc)</label>
+                            <textarea class="w-full text-base outline-none resize-none bg-transparent" placeholder="Ví dụ: Mang theo thang cao..." rows="2"></textarea>
+                        </div>
+
+                        <div class="bg-white md:bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2 text-center md:text-left">Thời gian mong muốn</label>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button class="flex-1 border-2 border-fixblue bg-blue-50 text-fixblue font-bold py-3 rounded-xl text-base shadow-sm">Có mặt nhanh (Làm ngay)</button>
+                                <button class="flex-1 border border-gray-200 text-gray-600 font-medium py-3 rounded-xl text-base bg-white hover:bg-gray-50">Hẹn giờ khác</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions button directly inside body for desktop -->
+                        <div class="pt-4 border-t border-gray-100 mt-6 hidden md:flex items-center justify-between">
+                            <div class="text-gray-800">Phí khảo sát dự kiến: <strong class="text-fixorange text-xl">100.000đ</strong></div>
+                            <button onclick="startFindingWorker()" class="bg-fixorange text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-orange-600 transition tracking-wide text-lg">
+                                TÌM THỢ NGAY
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bottom Action bar strictly for Mobile -->
+                <div id="booking-footer-mobile" class="md:hidden absolute bottom-0 w-full p-4 bg-white border-t rounded-t-xl z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-sm text-gray-500">Phí khảo sát dự kiến:</span>
+                        <span class="font-bold text-lg">100.000đ</span>
+                    </div>
+                    <button onclick="startFindingWorker()" class="w-full bg-fixorange text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-orange-600 transition tracking-wide text-lg">
+                        TÌM THỢ NGAY
+                    </button>
+                </div>
+
+                <!-- Modal Body: Step 2 Loading (Applies to both) -->
+                <div id="booking-step-loading" class="flex-1 flex flex-col justify-center items-center bg-fixblue text-white hidden md:rounded-b-2xl h-full py-16">
+                    <div class="spinner mb-6"></div>
+                    <h3 class="font-bold text-2xl mb-2 text-center px-4">Đang tìm chuyên gia tốt nhất khu vực Quận 1</h3>
+                    <p class="text-md text-blue-200 opacity-80 mt-2" id="loading-meter">Hệ thống đang phát tín hiệu...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-20 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:right-10 z-[200] flex flex-col gap-2 pointer-events-none w-max max-w-[90vw]"></div>
+
+    <script>
+        const titles = {
+            'home': 'Trang chủ Khách hàng',
+            'ai': 'Trợ lý FixNow AI',
+            'activity': 'Quản lý Đơn hàng',
+            'wallet': 'Ví FixNow & Ưu đãi',
+            'notifications': 'Tin nhắn',
+            'settings': 'Tài khoản'
+        };
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const borderColors = {
+                'success': 'border-green-500',
+                'error': 'border-red-500',
+                'warning': 'border-fixorange',
+                'info': 'border-blue-500'
+            };
+            const iconClasses = {
+                'success': 'fa-check-circle text-green-500',
+                'error': 'fa-exclamation-circle text-red-500',
+                'warning': 'fa-info-circle text-fixorange',
+                'info': 'fa-info-circle text-blue-500'
+            };
+
+            // Using opacity-0 and -translate-y-4 instead of x because mobile toasts look better coming from top
+            toast.className = `transform transition-all duration-300 -translate-y-4 opacity-0 pointer-events-auto bg-white border-l-4 ${borderColors[type]} shadow-xl rounded-lg p-3.5 pr-6 flex items-center gap-3 w-max min-w-[250px]`;
+            toast.innerHTML = `
+                <i class="fas ${iconClasses[type]} text-xl flex-shrink-0"></i>
+                <span class="text-sm font-semibold text-gray-800">${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('-translate-y-4', 'opacity-0');
+            }, 50);
+            
+            setTimeout(() => {
+                toast.classList.add('-translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Activity Tab Switcher
+        function switchActTab(tab) {
+            ['active', 'pending', 'history'].forEach(t => {
+                const btn = document.getElementById('act-tab-' + t);
+                if(btn) btn.className = 'px-4 py-2 bg-white text-gray-600 hover:bg-gray-50 border rounded-lg text-sm font-medium text-left whitespace-nowrap transition';
+                
+                const view = document.getElementById('act-view-' + t);
+                if(view) view.classList.add('hidden');
+            });
+
+            const activeBtn = document.getElementById('act-tab-' + tab);
+            if(activeBtn) {
+                activeBtn.className = 'px-4 py-2 bg-fixblue text-white rounded-lg text-sm font-bold shadow text-left whitespace-nowrap transition';
+                const badge = activeBtn.querySelector('.bg-red-500');
+                if(badge) badge.outerHTML = '';
+            }
+
+            const activeView = document.getElementById('act-view-' + tab);
+            if(activeView) activeView.classList.remove('hidden');
+        }
+
+        function switchTab(tabId) {
+            // Ẩn nội dung
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+
+            // Reset desktop tab styles
+            document.querySelectorAll('.nav-item').forEach(el => {
+                if(el.id === 'nav-ai') return; // Keep AI unformatted here, we'll handle it below
+                el.classList.remove('bg-fixblue', 'text-white');
+                el.classList.add('text-gray-600', 'hover:bg-gray-100');
+            });
+            // Reset AI tab specifically just in case
+            let aiDesktop = document.getElementById('nav-ai');
+            if(aiDesktop) {
+                 aiDesktop.classList.remove('bg-fixblue', 'text-white');
+                 aiDesktop.classList.add('text-gray-600', 'hover:bg-gray-100');
+                 let i = aiDesktop.querySelector('i');
+                 if(i) i.classList.add('text-blue-500'); // restore colored icon
+            }
+
+            // Reset mobile tab styles
+            document.querySelectorAll('.nav-mobile').forEach(el => {
+                el.classList.remove('text-fixblue', 'font-semibold');
+                el.classList.add('text-gray-400', 'font-medium');
+            });
+
+            // Hiển thị tab
+            const view = document.getElementById('view-' + tabId);
+            if(view) {
+                view.classList.remove('hidden');
+                view.classList.add('block');
+                document.getElementById('main-content').scrollTop = 0;
+            }
+
+            // Highlight desktop
+            let activeDesk = document.getElementById('nav-' + tabId);
+            if (activeDesk) {
+                activeDesk.classList.remove('text-gray-600', 'hover:bg-gray-100');
+                activeDesk.classList.add('bg-fixblue', 'text-white');
+                // if it's AI tab, make icon white too
+                if(tabId === 'ai') {
+                    let i = activeDesk.querySelector('i');
+                    if(i) i.classList.remove('text-blue-500');
+                }
+            }
+
+            // Highlight mobile
+            let activeMob = document.getElementById('nav-mobile-' + tabId);
+            if (activeMob) {
+                activeMob.classList.remove('text-gray-400', 'font-medium');
+                activeMob.classList.add('text-fixblue', 'font-semibold');
+            }
+
+            // Đổi Title
+            document.getElementById('page-title').innerText = titles[tabId];
+        }
+
+        // =====================================
+        // BOOKING MODAL LOGIC 
+        // =====================================
+        const bModal = document.getElementById('booking-modal');
+        const bContent = document.getElementById('booking-modal-content');
+        
+        function openBookingModal(title, iconClass) {
+            // Đặt text
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-icon').className = 'fas ' + iconClass;
+            
+            // Xóa Loading, hiện Form
+            document.getElementById('booking-step-1').classList.remove('hidden');
+            const footMob = document.getElementById('booking-footer-mobile');
+            if(footMob) footMob.classList.remove('hidden');
+            document.getElementById('booking-step-loading').classList.add('hidden');
+
+            // Mở Modal
+            bModal.classList.remove('hidden');
+            // Timeout nhỏ để đảm bảo trigger animation translate
+            setTimeout(() => {
+                bContent.classList.remove('translate-y-full');
+            }, 10);
+        }
+
+        function closeBookingModal() {
+            bContent.classList.add('translate-y-full');
+            setTimeout(() => {
+                bModal.classList.add('hidden');
+            }, 300); // 300ms khớp animation CSS
+        }
+
+        function startFindingWorker() {
+            // Ẩn form
+            document.getElementById('booking-step-1').classList.add('hidden');
+            const footMob = document.getElementById('booking-footer-mobile');
+            if(footMob) footMob.classList.add('hidden');
+            
+            // Hiện Loading
+            document.getElementById('booking-step-loading').classList.remove('hidden');
+            const meter = document.getElementById('loading-meter');
+            meter.innerText = "Đã khoanh vùng xong, gửi tín hiệu đến 15 thợ FixNow...";
+
+            setTimeout(() => { meter.innerText = "Có 1 thợ chấp nhận đơn!"; }, 1500);
+            
+            setTimeout(() => {
+                // Đóng Modal
+                closeBookingModal();
+                // Add order to list logic
+                const newHtml = `
+                <div class="bg-white rounded-xl shadow-lg border-2 border-fixorange overflow-hidden relative group animate-fade-in mb-4">
+                    <div class="p-4 border-b border-gray-50 flex justify-between items-center bg-orange-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white text-fixorange rounded-lg flex items-center justify-center font-bold text-xl shadow-sm"><i class="`+document.getElementById('modal-icon').className+`"></i></div>
+                            <div>
+                                <h4 class="font-bold text-fixorange text-lg">`+document.getElementById('modal-title').innerText+`</h4>
+                                <p class="text-xs text-gray-500 mt-1"><i class="far fa-clock"></i> Vừa đặt xong • Mã: FN-10029</p>
+                            </div>
+                        </div>
+                        <span class="bg-white border text-orange-600 text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm"><i class="fas fa-check"></i> Đã có thợ nhận</span>
+                    </div>
+                    
+                    <div class="p-5 flex flex-col md:flex-row gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-4 border-b pb-4 mb-4">
+                                <img src="https://ui-avatars.com/api/?name=Tran+Van+Tuan&background=14387d&color=fff" class="w-16 h-16 rounded-full border shadow-sm">
+                                <div>
+                                    <p class="font-bold text-gray-800 text-lg">Thợ: Trần Văn Tuấn</p>
+                                    <div class="flex items-center text-sm text-fixorange gap-1 mt-1">
+                                        <i class="fas fa-star"></i> 5.0 <span class="text-gray-500 ml-1 font-medium">• Đã làm 45 chuyến</span>
+                                    </div>
+                                    <div class="flex gap-2 mt-2">
+                                        <button class="px-3 py-1 rounded bg-blue-50 text-fixblue text-xs font-bold hover:bg-blue-100 transition"><i class="fas fa-comment-dots"></i> Chat ngay</button>
+                                        <button class="px-3 py-1 rounded bg-green-50 text-green-600 text-xs font-bold hover:bg-green-100 transition"><i class="fas fa-phone-alt"></i> Liên hệ</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+                
+                // Insert new order INTO the active view, not outside it
+                document.getElementById('act-view-active').insertAdjacentHTML('afterbegin', newHtml);
+                
+                // Update order count badges
+                const currentCount = parseInt(document.getElementById('sidebar-activity-badge').innerText || '1') + 1;
+                document.getElementById('sidebar-activity-badge').innerText = currentCount;
+                document.getElementById('desktop-activity-badge').innerText = currentCount;
+                
+                // Switch to activity tab and ensure active sub-tab is shown
+                switchTab('activity');
+                switchActTab('active');
+                
+                // Show success toast
+                showToast('Đã tìm được thợ! Thợ đang di chuyển đến bạn.', 'success');
+                
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
